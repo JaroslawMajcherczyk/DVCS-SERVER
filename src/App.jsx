@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import Dashboard from "./Dashboard";
+import CreateRepository from "./components/CreateRepository";
+import Profile from "./components/Profile";
+import Search from "./components/Search";
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,7 +31,17 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
           </>
         ) : (
-          <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />} />
+          <>
+            <Route
+              path="/dashboard/*" // Important to use * to handle sub-routes within Dashboard
+              element={<Dashboard user={user} onLogout={handleLogout} />}
+            >
+              {/* Nested routes inside the dashboard */}
+              <Route path="profile" element={<Profile />} />
+              <Route path="create-repository" element={<CreateRepository />} />
+              <Route path="search" element={<Search />} />
+            </Route>
+          </>
         )}
       </Routes>
     </Router>

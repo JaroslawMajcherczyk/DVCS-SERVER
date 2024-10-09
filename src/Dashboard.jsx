@@ -1,13 +1,15 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-undef */
-import React, { useEffect, useState } from "react";
-import { ref, get } from "firebase/database"; // Import the method to read data from Realtime Database
-import { db } from "./firebase"; // Import Firebase database
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useEffect, useState } from "react";
+import { ref, get } from "firebase/database";
+import { db } from "./firebase";
+import { Link, Outlet } from "react-router-dom"; // Import Outlet to handle nested routes
+import CreateRepository from "./components/CreateRepository";
+import Profile from "./components/Profile";
+import Search from "./components/Search";
 
 function Dashboard({ user, onLogout }) {
-  const [username, setUsername] = useState(user); // State for the username
-  const navigate = useNavigate(); // Hook for navigation
+  const [username, setUsername] = useState(user);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -29,16 +31,36 @@ function Dashboard({ user, onLogout }) {
     fetchUserData();
   }, [user]);
 
-  // Function for logging out and redirecting to the home page
   const handleLogout = () => {
-    onLogout(); // Call the logout function
-    navigate("/"); // Redirect to the home page
+    onLogout();
   };
 
   return (
     <div>
       <h1>Welcome {username}</h1>
-      <button onClick={handleLogout}>Logout</button>
+
+      {/* Static navigation that remains visible on all pages */}
+      <nav>
+        <ul>
+          <li>
+            <Link to="/dashboard/profile">Profile</Link>
+          </li>
+          <li>
+            <Link to="/dashboard/create-repository">Create Repository</Link>
+          </li>
+          <li>
+            <Link to="/dashboard/search">Search</Link>
+          </li>
+          <li>
+            <button onClick={handleLogout}>Logout</button>
+          </li>
+        </ul>
+      </nav>
+
+      {/* Outlet renders the nested routes */}
+      <div className="content">
+        <Outlet />
+      </div>
     </div>
   );
 }
