@@ -1,12 +1,9 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable no-undef */
 import { useEffect, useState } from "react";
-import { ref, get } from "firebase/database";
+import { ref, get, set } from "firebase/database";
 import { db } from "./firebase";
 import { Link, Outlet } from "react-router-dom"; // Import Outlet to handle nested routes
-import CreateRepository from "./components/CreateRepository";
-import Profile from "./components/Profile";
-import Search from "./components/Search";
+
 
 function Dashboard({ user, onLogout }) {
   const [username, setUsername] = useState(user);
@@ -34,6 +31,17 @@ function Dashboard({ user, onLogout }) {
   const handleLogout = () => {
     onLogout();
   };
+  const saveDataToRealtimeDatabase = async () => {
+    try {
+      await set(ref(db, 'users/' + user.uid), {
+        username: username,
+        email: user.email
+      });
+      console.log('Dane zostały zapisane do Realtime Database');
+    } catch (error) {
+      console.error('Błąd podczas zapisu danych:', error);
+    }
+  };
 
   return (
     <div>
@@ -50,6 +58,9 @@ function Dashboard({ user, onLogout }) {
           </li>
           <li>
             <Link to="/dashboard/search">Search</Link>
+          </li>
+          <li>
+            <button onClick={saveDataToRealtimeDatabase}>Save Data to Firestore</button>
           </li>
           <li>
             <button onClick={handleLogout}>Logout</button>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { db } from '../firebase'; 
 import { v4 as uuidv4 } from 'uuid'; 
-import { ref as dbRef, set } from 'firebase/database'; 
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
+import { doc, setDoc, Timestamp } from "firebase/firestore";  // Import Firestore functions
+
 function CreateRepository() { 
 
   const [showModal, setShowModal] = useState(false);  // State for controlling the popup visibility
@@ -11,21 +12,21 @@ function CreateRepository() {
 
   // Monitor authentication state
   useEffect(() => {
-    const auth = getAuth(); // Get Firebase Auth instance
+    const auth = getAuth(); 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set user data when logged in
-        console.log("Logged in as:", currentUser.email); // Output user email to console
+        setUser(currentUser);
+        console.log("Logged in as:", currentUser.email); // Log user email
       } else {
-        setUser(null); // Set to null when not logged in
+        setUser(null);
         console.log("No user is logged in");
       }
     });
-
-    return () => unsubscribe(); // Cleanup subscription on component unmount
+  
+    return () => unsubscribe();
   }, []);
 
-  // Handle project creation in Firebase Realtime Database
+  // Handle project creation in Firebase Firestore
   const handleCreateProject = async () => {
     if (!projectName) {
       alert("Please enter a project name");
@@ -37,29 +38,26 @@ function CreateRepository() {
       return;
     }
 
-    const projectId = uuidv4(); // Generate unique ID for the project
-    const creationTime = new Date().toISOString(); // Get the current date and time
+    const repoId = uuidv4(); // Generate unique ID for the project
+    const creationTime = Timestamp.now(); // Use Firestore Timestamp for the current time
 
     try {
-      // Create a new reference in Firebase Database for the project in the path `repository/project`
-      const projectRef = dbRef(db, `repository/projects/${projectId}`);
-      await set(projectRef, {
+      const projectRef = doc(db, "repository", repoId); // Reference to the Firestore document
+
+      await setDoc(projectRef, {
         projectName,
         userName: user.email, // Use the user's email from Firebase Auth
         creationTime,
-        projectId,
+        repoId,
       });
 
       alert("Project created successfully!");
       setShowModal(false); // Close the modal after success
+      setProjectName(""); // Reset project name input field
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("Error creating project:", error); // Log detailed error
+      alert(`Error creating project: ${error.message}`);
     }
-
-    console.log("Project Name:", projectName);
-    console.log("User Email:", user.email);
-    console.log("Project ID:", projectId);
-    console.log("Creation Time:", creationTime);
   };
 
   return (
