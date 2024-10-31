@@ -14,6 +14,7 @@ TO-DO-LIST
 - Implement functions to SET data/files to Firebase Storage. :white_check_mark:
 - Implement functions to GET data/files from Firebase Storage. :white_check_mark:
 - Structure the Database Storage as follows:
+  
         /database
             /ip_project/repo
                 /ip_project_folder
