@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react";
 import { ref, get, set } from "firebase/database";
 import { db } from "./firebase";
-import { Link, Outlet } from "react-router-dom"; // Import Outlet to handle nested routes
-
+import { Link, Outlet } from "react-router-dom";
+import RepositoryDetails from "./components/RepositoryDetails";
 
 function Dashboard({ user, onLogout }) {
   const [username, setUsername] = useState(user);
+  const [selectedRepoId, setSelectedRepoId] = useState(null); // Track selected repo for details view
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,33 +32,37 @@ function Dashboard({ user, onLogout }) {
   const handleLogout = () => {
     onLogout();
   };
+
   const saveDataToRealtimeDatabase = async () => {
     try {
       await set(ref(db, 'users/' + user.uid), {
         username: username,
         email: user.email
       });
-      console.log('Dane zostały zapisane do Realtime Database');
+      console.log('Data saved to Realtime Database');
     } catch (error) {
-      console.error('Błąd podczas zapisu danych:', error);
+      console.error('Error saving data:', error);
     }
+  };
+
+  const onSelectRepository = (repoId) => {
+    setSelectedRepoId(repoId); // Set selected repo ID to show details
   };
 
   return (
     <div>
       <h1>Welcome {username}</h1>
 
-      {/* Static navigation that remains visible on all pages */}
       <nav>
         <ul>
           <li>
-            <Link to="/dashboard/profile">Profile</Link>
+            <Link to="/dashboard/profile" onClick={() => setSelectedRepoId(null)}>Profile</Link>
           </li>
           <li>
-            <Link to="/dashboard/create-repository">Create Repository</Link>
+            <Link to="/dashboard/create-repository" onClick={() => setSelectedRepoId(null)}>Create Repository</Link>
           </li>
           <li>
-            <Link to="/dashboard/search">Search</Link>
+            <Link to="/dashboard/search" onClick={() => setSelectedRepoId(null)}>Search</Link>
           </li>
           <li>
             <button onClick={saveDataToRealtimeDatabase}>Save Data to Firestore</button>
@@ -68,9 +73,12 @@ function Dashboard({ user, onLogout }) {
         </ul>
       </nav>
 
-      {/* Outlet renders the nested routes */}
       <div className="content">
-        <Outlet />
+        {selectedRepoId ? (
+          <RepositoryDetails repoId={selectedRepoId} /> // Show RepositoryDetails if a repo is selected
+        ) : (
+          <Outlet context={{ onSelectRepository }} /> // Pass onSelectRepository to Outlet context
+        )}
       </div>
     </div>
   );
