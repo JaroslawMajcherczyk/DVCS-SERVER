@@ -28,6 +28,8 @@ TO-DO-LIST
 - Implement navigation to open folders within folders, and files within folders. :white_check_mark:
 - Implement a function to add commits. :white_check_mark:
 - Implement a function to manage commits. :white_check_mark:
+- Implement a function to display a list of all repositorys. :white_check_mark:
+- Implement a search for a connection with a repository name that displays repositories that contain at least 3 identical characters :white_check_mark:
 - Implement a function to display a list of all commits in a repository.
 - Implement a function to display all repositories on the DVCS Server.
 

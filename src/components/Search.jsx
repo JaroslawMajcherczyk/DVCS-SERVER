@@ -1,56 +1,73 @@
-import { useState } from 'react';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase'; // Upewnij się, że ścieżka jest poprawna
-
+import { useState, useEffect } from 'react';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import RepositoryDetails from './RepositoryDetails'; // Import component to view repository details
 
 function Search() {
-  const [file, setFile] = useState(null);
-  const [fileContent, setFileContent] = useState("");
-  const [fileName, setFileName] = useState("");
+  const [repositories, setRepositories] = useState([]); // All public repositories
+  const [filteredRepositories, setFilteredRepositories] = useState([]); // Repositories matching search query
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRepoId, setSelectedRepoId] = useState(null); // ID of selected repository for viewing details
+  const db = getDatabase();
 
-  // Funkcja do zapisywania pliku w Firebase Storage
-  const handleFileUpload = async () => {
-    if (!file) return;
+  useEffect(() => {
+    // Fetch public repositories from Realtime Database
+    const repoRef = ref(db, 'repositories');
+    onValue(repoRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const publicRepos = Object.keys(data)
+        .map((key) => ({ id: key, ...data[key] }))
+        .filter((repo) => repo.isPublic === true);
+      setRepositories(publicRepos);
+      setFilteredRepositories(publicRepos); // Display all public repos initially
+    });
+  }, [db]);
 
-    try {
-      const customID = prompt("Podaj unikalne ID dla bazy danych:");
-      const storageRef = ref(storage, `databases/${customID}/${file.name}`);
-      await uploadBytes(storageRef, file);
-      setFileName(file.name);
-      alert("Plik został zapisany pomyślnie!");
-    } catch (error) {
-      console.error("Błąd podczas zapisywania pliku:", error);
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 2) {
+      // Filter repositories by name based on search query
+      const filtered = repositories.filter((repo) =>
+        repo.repositoryName.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredRepositories(filtered);
+    } else {
+      // If search query is less than 3 characters, reset the list
+      setFilteredRepositories(repositories);
     }
   };
 
- 
-  const fetchFileContent = async () => {
-    const storage = getStorage();
-    const filePath = "databases/123/Wyniki_UDP.txt";
-    const fileRef = ref(storage, filePath);
-
-    try {
-      // Get the file's download URL
-      const url = await getDownloadURL(fileRef);
-
-      // Fetch the file content using the download URL
-      const response = await fetch(url);
-      const text = await response.text(); // Convert to text
-      setFileContent(text);
-    } catch (error) {
-      console.error("Error fetching file:", error);
-    }
+  const handleRepositoryClick = (repoId) => {
+    setSelectedRepoId(repoId); // Set selected repository ID for viewing details
   };
-
 
   return (
     <div>
-      <h2>Search for repositories</h2>
-      <input type="file" accept=".txt" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={handleFileUpload}>Zapisz plik</button>
+      <h2>Search Public Repositories</h2>
+      <input
+        type="text"
+        placeholder="Search for a repository..."
+        value={searchQuery}
+        onChange={handleSearchChange}
+      />
 
-      <button onClick={fetchFileContent}>Wyświetl zawartość pliku</button>
-      <pre>{fileContent}</pre>
+      <ul>
+        {filteredRepositories.length > 0 ? (
+          filteredRepositories.map((repo) => (
+            <li key={repo.id}>
+              <button onClick={() => handleRepositoryClick(repo.id)}>
+                {repo.repositoryName}
+              </button>
+            </li>
+          ))
+        ) : (
+          <p>No repositories found.</p>
+        )}
+      </ul>
+
+      {/* Render RepositoryDetails if a repository is selected */}
+      {selectedRepoId && <RepositoryDetails repoId={selectedRepoId} />}
     </div>
   );
 }
