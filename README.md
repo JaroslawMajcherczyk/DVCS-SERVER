@@ -26,7 +26,8 @@ TO-DO-LIST
 - Implement a function to create new repositories. :white_check_mark:
 - Implement a function to display all user repositories on the Profile page. :white_check_mark:
 - Implement navigation to open folders within folders, and files within folders. :white_check_mark:
-- Implement a function to manage commits.
+- Implement a function to add commits. :white_check_mark:
+- Implement a function to manage commits. :white_check_mark:
 - Implement a function to display a list of all commits in a repository.
 - Implement a function to display all repositories on the DVCS Server.
 
