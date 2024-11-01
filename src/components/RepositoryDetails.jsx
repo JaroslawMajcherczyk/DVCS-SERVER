@@ -1,62 +1,104 @@
 import { useEffect, useState } from 'react';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
+import { getDatabase, ref as dbRef, onValue } from 'firebase/database';
 
 function RepositoryDetails({ repoId }) {
+  const [repoName, setRepoName] = useState(""); // State to store repository name
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
   const [fileContent, setFileContent] = useState("");
-  const [currentPath, setCurrentPath] = useState(`databases/${repoId}`);
+  const [currentPath, setCurrentPath] = useState("");
+  const [baseCommitPath, setBaseCommitPath] = useState("");
+  const [latestCommitName, setLatestCommitName] = useState("");
   const storage = getStorage();
+  const db = getDatabase();
 
   useEffect(() => {
-    if (!repoId) return; // Ensure repoId is provided
+    if (!repoId) return;
 
-    const listContents = async () => {
-      const storageRef = ref(storage, currentPath);
-      try {
-        const folderSnapshot = await listAll(storageRef);
-        const folderNames = folderSnapshot.prefixes.map((folderRef) => folderRef.name);
-        const fileNames = folderSnapshot.items.map((fileRef) => fileRef.name);
-        setFolders(folderNames);
-        setFiles(fileNames);
-      } catch (error) {
-        console.error("Error listing contents:", error);
+    // Fetch repository name
+    const repoRef = dbRef(db, `repositories/${repoId}`);
+    onValue(repoRef, (snapshot) => {
+      const repoData = snapshot.val();
+      if (repoData && repoData.repositoryName) {
+        setRepoName(repoData.repositoryName);
       }
+    });
+
+    const fetchLatestCommit = () => {
+      const commitsRef = dbRef(db, `repositories/${repoId}/commits`);
+      onValue(commitsRef, (snapshot) => {
+        const commits = snapshot.val();
+        if (!commits) return;
+
+        // Determine the latest commit by timestamp
+        const latestCommit = Object.entries(commits).reduce((latest, [id, data]) =>
+          !latest || new Date(data.timestamp) > new Date(latest.timestamp) ? { id, ...data } : latest
+        , null);
+
+        if (latestCommit) {
+          setLatestCommitName(latestCommit.message);
+          const latestCommitPath = `databases/${repoId}/commits/${latestCommit.id}`;
+          setBaseCommitPath(latestCommitPath);
+          setCurrentPath(latestCommitPath);
+          listContents(latestCommitPath); // Load the contents of the latest commit
+        }
+      });
     };
-    listContents();
-  }, [currentPath, repoId]);
+
+    fetchLatestCommit();
+  }, [repoId, db, storage]);
 
   const fetchFileContent = async (fileName) => {
-    const filePath = `${currentPath}/${fileName}`;
-    const fileRef = ref(storage, filePath);
+    const fileRef = ref(storage, `${currentPath}/${fileName}`);
 
     try {
       const url = await getDownloadURL(fileRef);
       const response = await fetch(url);
-      const text = await response.text();
-      setFileContent(text);
+      setFileContent(await response.text());
     } catch (error) {
       console.error("Error fetching file:", error);
     }
   };
 
   const enterFolder = (folderName) => {
-    setCurrentPath((prevPath) => `${prevPath}/${folderName}`);
+    const newPath = `${currentPath}/${folderName}`;
+    setCurrentPath(newPath);
     setFileContent("");
+    listContents(newPath);
   };
 
-  const goBack = () => {
-    setCurrentPath((prevPath) => prevPath.split('/').slice(0, -1).join('/'));
+  const listContents = async (path) => {
+    try {
+      const snapshot = await listAll(ref(storage, path));
+      setFolders(snapshot.prefixes.map((folderRef) => folderRef.name));
+      setFiles(snapshot.items.map((fileRef) => fileRef.name));
+    } catch (error) {
+      console.error("Error listing contents:", error);
+    }
+  };
+
+  const handleBreadcrumbClick = (index) => {
+    const newPath = [baseCommitPath, ...currentPath.replace(baseCommitPath, "").split('/').slice(1, index + 1)].join('/');
+    setCurrentPath(newPath);
     setFileContent("");
+    listContents(newPath);
   };
 
   return (
     <div>
-      <h2>Repository: {repoId}</h2>
-      <h3>Current Path: {currentPath}</h3>
-      <button onClick={goBack} disabled={currentPath === `databases/${repoId}`}>
-        Go Back
-      </button>
+      <h2>Repository: {repoName}</h2> {/* Display repository name */}
+
+      <h3>Path Navigation</h3>
+      <div>
+        {[latestCommitName, ...currentPath.replace(baseCommitPath, "").split('/').slice(1)]
+          .map((part, index) => (
+            <span key={index}>
+              <button onClick={() => handleBreadcrumbClick(index)}>{part}</button>
+              {index < currentPath.split('/').length - 1 && ' / '}
+            </span>
+        ))}
+      </div>
 
       <h3>Folders</h3>
       <ul>

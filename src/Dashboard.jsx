@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { ref, get, set } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { db } from "./firebase";
 import { Link, Outlet } from "react-router-dom";
 import RepositoryDetails from "./components/RepositoryDetails";
@@ -30,19 +30,10 @@ function Dashboard({ user, onLogout }) {
   }, [user]);
 
   const handleLogout = () => {
+    // Remove stored credentials from localStorage
+    localStorage.removeItem("email");
+    localStorage.removeItem("password");
     onLogout();
-  };
-
-  const saveDataToRealtimeDatabase = async () => {
-    try {
-      await set(ref(db, 'users/' + user.uid), {
-        username: username,
-        email: user.email
-      });
-      console.log('Data saved to Realtime Database');
-    } catch (error) {
-      console.error('Error saving data:', error);
-    }
   };
 
   const onSelectRepository = (repoId) => {
@@ -63,9 +54,6 @@ function Dashboard({ user, onLogout }) {
           </li>
           <li>
             <Link to="/dashboard/search" onClick={() => setSelectedRepoId(null)}>Search</Link>
-          </li>
-          <li>
-            <button onClick={saveDataToRealtimeDatabase}>Save Data to Firestore</button>
           </li>
           <li>
             <button onClick={handleLogout}>Logout</button>

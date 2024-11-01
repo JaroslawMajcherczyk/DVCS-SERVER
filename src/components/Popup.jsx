@@ -1,12 +1,23 @@
-import { useState} from 'react';
+import { useState, useEffect } from 'react';
 
 function Popup({ onClose, onSave, repositoryData }) {
-  const [repoName, setRepoName] = useState(repositoryData?.repositoryName || '');
-  const [isPublic, setIsPublic] = useState(repositoryData?.isPublic || true);
-  const [cooperators, setCooperators] = useState(repositoryData?.cooperators.join(', ') || '');
+  // Initialize form fields with repository data if editing, or with defaults if creating a new repository
+  const [repoName, setRepoName] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
+  const [cooperators, setCooperators] = useState('');
+
+  useEffect(() => {
+    if (repositoryData) {
+      setRepoName(repositoryData.repositoryName || '');
+      setIsPublic(repositoryData.isPublic ?? true);
+      setCooperators((repositoryData.cooperators || []).join(', '));
+    }
+  }, [repositoryData]);
 
   const handleSave = () => {
-    const cooperatorsArray = cooperators.split(',').map(coop => coop.trim());
+    const cooperatorsArray = cooperators.split(',').map(coop => coop.trim()).filter(Boolean);
+    
+    // Call onSave with new or updated repository data
     onSave({
       repositoryName: repoName,
       isPublic: isPublic,
