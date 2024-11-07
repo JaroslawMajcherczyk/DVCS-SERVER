@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, listAll, deleteObject } from 'firebase/storage';
-import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
+import { getDatabase, ref, set, onValue, get, remove } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
 import Popup from './Popup';
 import RepoDeletePopup from './RepoDeletePopup';
 import NewCommitPopup from './NewCommitPopup'; // Import the NewCommitPopup component
+import MessagePopup from './MessagePopup'; 
 import { useOutletContext } from 'react-router-dom';
 
 function Profile() {
@@ -14,6 +15,7 @@ function Profile() {
   const [selectedRepo, setSelectedRepo] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showCommitPopup, setShowCommitPopup] = useState(false); // State for NewCommitPopup visibility
+  const [showMessagePopup, setShowMessagePopup] = useState(false); 
   const auth = getAuth();
   const db = getDatabase();
 
@@ -25,9 +27,19 @@ function Profile() {
       const userRepoRef = ref(db, `repositories`);
       onValue(userRepoRef, (snapshot) => {
         const data = snapshot.val() || {};
-        const userRepos = Object.keys(data)
-          .filter((key) => data[key].owner === user.uid)
-          .map((key) => ({ id: key, ...data[key] }));
+
+              // Filter repositories where the user is the owner or has full access as a cooperator
+              const userRepos = Object.keys(data).filter((key) => {
+                const repo = data[key];
+                return (
+                  repo.owner === user.uid ||
+                  (repo.cooperators &&
+                    repo.cooperators[user.uid] &&
+                    (repo.cooperators[user.uid].accessLevel === 'full' ||
+                      repo.cooperators[user.uid].accessLevel === 'true'))
+                );
+              }).map((key) => ({ id: key, ...data[key] }));
+
         setRepositories(userRepos);
       });
     }
@@ -143,6 +155,62 @@ function Profile() {
     }
   };
   
+  const handleCreateMessage = async (recipientEmail, repositoryID, repositoryName) => {
+    const auth = getAuth();
+    const db = getDatabase();
+    const senderID = auth.currentUser.uid;
+
+      // Fetch the sender's username
+    const senderRef = ref(db, `users/${senderID}`);
+    const senderSnapshot = await get(senderRef);
+    let senderUsername = "Unknown User"; // Default in case username is not found
+
+    if (senderSnapshot.exists()) {
+      senderUsername = senderSnapshot.val().username || senderUsername;
+    }
+    
+    // Find the recipient user ID by email
+    const usersRef = ref(db, 'users');
+    const userSnapshot = await get(usersRef);
+    let recipientID = null;
+  
+    if (userSnapshot.exists()) {
+      userSnapshot.forEach((childSnapshot) => {
+        const userData = childSnapshot.val();
+        console.log(`Checking user: ${userData.email}`); // Debugging log
+        if (userData.email === recipientEmail) {
+          recipientID = childSnapshot.key;
+        }
+      });
+    }
+  
+    if (!recipientID) {
+      alert("Recipient user not found.");
+      return;
+    }
+  
+    // Create a new message for the recipient
+    const messageID = uuidv4();
+    const messageRef = ref(db, `users/${recipientID}/messages/${messageID}`);
+    await set(messageRef, {
+      fromUser: senderID,
+      repositoryID,
+      repositoryName,
+      status: 0, // 0 = Not Read
+      message: `You've been invited to view and collaborate on the repository: ${repositoryName} by user: ${senderUsername}.`,
+      timestamp: new Date().toISOString(),
+    });
+  
+    console.log(`Message sent to ${recipientEmail} for repository access.`);
+  };
+  
+
+  // Function to open the MessagePopup for a specific repository
+  const handleOpenMessagePopup = (repo) => {
+    setSelectedRepo(repo);
+    setShowMessagePopup(true);
+  };
+
 
   return (
     <div>
@@ -157,6 +225,7 @@ function Profile() {
               <button onClick={() => handleEditRepository(repo)}>Edit</button>
               <button onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
               <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
+              <button onClick={() => handleOpenMessagePopup(repo)}>Add User To Repo</button>
               <ul>
                 {repo.commits && Object.entries(repo.commits).map(([commitID, commit]) => (
                   <li key={commitID}>
@@ -191,6 +260,14 @@ function Profile() {
         <NewCommitPopup
           onClose={() => setShowCommitPopup(false)}
           onSave={handleSaveCommit}
+        />
+      )}
+        {showMessagePopup && selectedRepo && (
+        <MessagePopup
+          onClose={() => setShowMessagePopup(false)}
+          onSendMessage={handleCreateMessage}
+          repositoryID={selectedRepo.id}
+          repositoryName={selectedRepo.repositoryName}
         />
       )}
     </div>

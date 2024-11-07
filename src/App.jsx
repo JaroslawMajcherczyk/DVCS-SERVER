@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
 import Dashboard from "./Dashboard";
-import CreateRepository from "./components/CreateRepository";
+//import CreateRepository from "./components/CreateRepository";
 import Profile from "./components/Profile";
 import Search from "./components/Search";
+import Messages from "./components/Messages"; 
 import RepositoryDetails from "./components/RepositoryDetails"; // Import the RepositoryDetails component
 
 function App() {
@@ -38,8 +39,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard user={user} onLogout={handleLogout} />}>
               {/* Nested routes within the dashboard */}
               <Route path="profile" element={<Profile />} />
-              <Route path="create-repository" element={<CreateRepository />} />
               <Route path="search" element={<Search />} />
+              <Route path="messages" element={<Messages />} />
             </Route>
             {/* Repository Details Route */}
             <Route path="/repository/:repoId" element={<RepositoryDetails />} />

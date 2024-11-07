@@ -1,55 +1,49 @@
-import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { ref, set, get, getDatabase } from 'firebase/database';
-import { v4 as uuidv4 } from 'uuid';
+import { ref, set, getDatabase, onValue } from 'firebase/database';
 
-function Popup({ onClose, onSave, repositoryData }) {
+function Popup({ onClose, onSave, repositoryData, owner }) {
   const [repoName, setRepoName] = useState(repositoryData?.repositoryName || '');
   const [isPublic, setIsPublic] = useState(repositoryData?.isPublic ?? true);
-  const [cooperators, setCooperators] = useState(repositoryData?.cooperators ? Object.keys(repositoryData.cooperators).join(', ') : '');
+  const [cooperators, setCooperators] = useState(repositoryData?.cooperators?.join(', ') || '');
   const db = getDatabase();
   const auth = getAuth();
 
   const handleSave = async () => {
     const cooperatorUsernames = cooperators.split(',').map(coop => coop.trim()).filter(Boolean);
-    const validCooperators = {};
+    const validCooperators = [];
 
-    // Validate each cooperator by their username
-    for (const username of cooperatorUsernames) {
-      const usersRef = ref(db, `users`);
-      const usersSnapshot = await get(usersRef);
-
+    for (let username of cooperatorUsernames) {
+      const userRef = ref(db, `users`);
       let userFound = false;
-      usersSnapshot.forEach((userSnapshot) => {
-        const userData = userSnapshot.val();
-        if (userData.username === username) {
-          const userID = userSnapshot.key;
-          validCooperators[userID] = {
-            accessLevel: 'pending', // Initial access level until the user accepts
-            invitedBy: auth.currentUser.uid
-          };
 
-          // Send an invitation message
-          const messageID = uuidv4();
-          const messageRef = ref(db, `users/${userID}/messages/${messageID}`);
-          set(messageRef, {
-            fromUser: auth.currentUser.uid,
-            repositoryID: repositoryData ? repositoryData.id : uuidv4(),
-            repositoryName: repoName,
-            status: 'pending',
-            message: `You have been invited to the repository ${repoName} as a cooperator. Please accept the invitation to gain access.`,
-            timestamp: new Date().toISOString(),
-          });
-          userFound = true;
+      // Check if the username exists
+      onValue(userRef, (snapshot) => {
+        snapshot.forEach((userSnapshot) => {
+          const data = userSnapshot.val();
+          if (data.username === username) {
+            userFound = true;
+            // Prepare the invitation message
+            const messageID = uuidv4();
+            const messageRef = ref(db, `messages/${messageID}`);
+            set(messageRef, {
+              toUser: userSnapshot.key,
+              fromUser: owner.uid,
+              repositoryID: repositoryData.id,
+              repositoryName: repoName,
+              status: 'pending',
+              message: `You have been added to repository ${repoName} as a cooperator. Confirm to gain access for commits.`,
+            });
+            validCooperators.push(userSnapshot.key);
+          }
+        });
+
+        if (!userFound) {
+          alert(`User ${username} does not exist.`);
         }
       });
-
-      if (!userFound) {
-        alert(`User ${username} does not exist.`);
-      }
     }
 
-    // Save or update the repository in the database
+    // Save the repository with valid cooperators in the database
     onSave({
       repositoryName: repoName,
       isPublic: isPublic,

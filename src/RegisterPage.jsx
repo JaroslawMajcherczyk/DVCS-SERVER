@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set } from "firebase/database"; // Import functions from Realtime Database
-import { auth, db } from "./firebase"; // Import Firebase authentication and database
+import { ref, set } from "firebase/database";
+import { auth, db } from "./firebase";
 
 function RegisterPage() {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -13,26 +14,28 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Create a user using Firebase Authentication
+      // Create a new user with Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save additional user data in Realtime Database
-      await set(ref(db, 'users/' + user.uid), {
-        email: email
+      // Store user data in the Realtime Database under `users` with the UID as the key
+      const userRef = ref(db, `users/${user.uid}`);
+      await set(userRef, {
+        uid: user.uid,        // Store the user's UID
+        username: username,   // Store the username
+        email: email          // Store the email
       });
 
       console.log("User registered:", user);
-      navigate("/"); // Redirect to login after registration
+      navigate("/"); // Redirect to home or login after registration
     } catch (error) {
       setError("Registration failed: " + error.message);
     }
   };
 
-  // Function for logging out and redirecting to the home page
+  // Function to handle logout (redirects to home)
   const handleLogout = () => {
-    // Call the logout function
-    navigate("/"); // Redirect to the home page
+    navigate("/");
   };
 
   return (
@@ -40,6 +43,12 @@ function RegisterPage() {
       <div>
         <h1>Registration</h1>
         <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
           <input
             type="email"
             placeholder="Email"

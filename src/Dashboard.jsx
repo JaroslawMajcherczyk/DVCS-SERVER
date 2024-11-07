@@ -49,11 +49,14 @@ function Dashboard({ user, onLogout }) {
           <li>
             <Link to="/dashboard/profile" onClick={() => setSelectedRepoId(null)}>Profile</Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/dashboard/create-repository" onClick={() => setSelectedRepoId(null)}>Create Repository</Link>
-          </li>
+          </li> */}
           <li>
             <Link to="/dashboard/search" onClick={() => setSelectedRepoId(null)}>Search</Link>
+          </li>
+          <li>
+          <Link to="/dashboard/messages" onClick={() => setSelectedRepoId(null)}>Messages</Link> {/* New Messages Link */}
           </li>
           <li>
             <button onClick={handleLogout}>Logout</button>
