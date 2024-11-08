@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { ref, set, get, getDatabase } from 'firebase/database';
+import { ref, update,  set, get, getDatabase } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
 
 function Popup({ onClose, onSave, repositoryData }) {
@@ -10,15 +10,16 @@ function Popup({ onClose, onSave, repositoryData }) {
   const db = getDatabase();
   const auth = getAuth();
 
+
   const handleSave = async () => {
     const cooperatorUsernames = cooperators.split(',').map(coop => coop.trim()).filter(Boolean);
     const validCooperators = {};
-
-    // Validate each cooperator by their username
+  
+    // Validate each cooperator by their username (as in your original code)
     for (const username of cooperatorUsernames) {
       const usersRef = ref(db, `users`);
       const usersSnapshot = await get(usersRef);
-
+  
       let userFound = false;
       usersSnapshot.forEach((userSnapshot) => {
         const userData = userSnapshot.val();
@@ -28,8 +29,8 @@ function Popup({ onClose, onSave, repositoryData }) {
             accessLevel: 'pending', // Initial access level until the user accepts
             invitedBy: auth.currentUser.uid
           };
-
-          // Send an invitation message
+  
+          // Send an invitation message (as in your original code)
           const messageID = uuidv4();
           const messageRef = ref(db, `users/${userID}/messages/${messageID}`);
           set(messageRef, {
@@ -43,20 +44,26 @@ function Popup({ onClose, onSave, repositoryData }) {
           userFound = true;
         }
       });
-
+  
       if (!userFound) {
         alert(`User ${username} does not exist.`);
       }
     }
-
-    // Save or update the repository in the database
-    onSave({
+  
+    // Prepare data to be updated
+    const updates = {
       repositoryName: repoName,
       isPublic: isPublic,
-      cooperators: validCooperators,
-    });
+    };
+  
+    // Update only the specified fields in the database
+    const repoRef = ref(db, `repositories/${repositoryData.id}`);
+    await update(repoRef, updates);
+  
+    // Close the popup
     onClose();
   };
+  
 
   return (
     <div className="popup">
