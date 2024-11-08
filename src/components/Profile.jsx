@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, listAll, deleteObject } from 'firebase/storage';
 import { getDatabase, ref, set, onValue, get, remove } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
-import Popup from './Popup';
+import Popup from './NewRepositoryPopup';
 import RepoDeletePopup from './RepoDeletePopup';
 import NewCommitPopup from './NewCommitPopup'; // Import the NewCommitPopup component
 import MessagePopup from './MessagePopup'; 
@@ -222,10 +222,21 @@ function Profile() {
           {repositories.map((repo) => (
             <li key={repo.id}>
               <button onClick={() => onSelectRepository(repo.id)}>{repo.repositoryName}</button>
-              <button onClick={() => handleEditRepository(repo)}>Edit</button>
-              <button onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
-              <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
-              <button onClick={() => handleOpenMessagePopup(repo)}>Add User To Repo</button>
+
+              {/* Conditional Rendering based on User Role */}
+              {auth.currentUser.uid === repo.owner ? (
+                <>
+                  <button onClick={() => handleEditRepository(repo)}>Edit</button>
+                  <button onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
+                  <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
+                  <button onClick={() => handleOpenMessagePopup(repo)}>Add User To Repo</button>
+                </>
+              ) : (
+                repo.cooperators && repo.cooperators[auth.currentUser.uid] ? (
+                  <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
+                ) : null
+              )}
+              
               <ul>
                 {repo.commits && Object.entries(repo.commits).map(([commitID, commit]) => (
                   <li key={commitID}>

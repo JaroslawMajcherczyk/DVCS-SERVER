@@ -1,54 +1,95 @@
+import { useState } from 'react';
 import { getAuth } from 'firebase/auth';
-import { ref, set, getDatabase, onValue } from 'firebase/database';
+import { ref, update, set, get, getDatabase } from 'firebase/database';
+import { v4 as uuidv4 } from 'uuid';
 
-function Popup({ onClose, onSave, repositoryData, owner }) {
+// eslint-disable-next-line react/prop-types
+function NewRepositoryPopup({ onClose, repositoryData }) {
+  // eslint-disable-next-line react/prop-types
   const [repoName, setRepoName] = useState(repositoryData?.repositoryName || '');
+  // eslint-disable-next-line react/prop-types
   const [isPublic, setIsPublic] = useState(repositoryData?.isPublic ?? true);
-  const [cooperators, setCooperators] = useState(repositoryData?.cooperators?.join(', ') || '');
+  // eslint-disable-next-line react/prop-types
+  const [cooperators, setCooperators] = useState(repositoryData?.cooperators ? Object.keys(repositoryData.cooperators).join(', ') : '');
   const db = getDatabase();
   const auth = getAuth();
 
-  const handleSave = async () => {
+  // Function to create a new repository
+  const handleCreateRepository = async () => {
     const cooperatorUsernames = cooperators.split(',').map(coop => coop.trim()).filter(Boolean);
-    const validCooperators = [];
+    const validCooperators = {};
 
-    for (let username of cooperatorUsernames) {
-      const userRef = ref(db, `users`);
+    // Validate each cooperator by their username
+    for (const username of cooperatorUsernames) {
+      const usersRef = ref(db, `users`);
+      const usersSnapshot = await get(usersRef);
+
       let userFound = false;
+      usersSnapshot.forEach((userSnapshot) => {
+        const userData = userSnapshot.val();
+        if (userData.username === username) {
+          const userID = userSnapshot.key;
+          validCooperators[userID] = {
+            accessLevel: 'pending', // Initial access level until the user accepts
+            invitedBy: auth.currentUser.uid,
+          };
 
-      // Check if the username exists
-      onValue(userRef, (snapshot) => {
-        snapshot.forEach((userSnapshot) => {
-          const data = userSnapshot.val();
-          if (data.username === username) {
-            userFound = true;
-            // Prepare the invitation message
-            const messageID = uuidv4();
-            const messageRef = ref(db, `messages/${messageID}`);
-            set(messageRef, {
-              toUser: userSnapshot.key,
-              fromUser: owner.uid,
-              repositoryID: repositoryData.id,
-              repositoryName: repoName,
-              status: 'pending',
-              message: `You have been added to repository ${repoName} as a cooperator. Confirm to gain access for commits.`,
-            });
-            validCooperators.push(userSnapshot.key);
-          }
-        });
-
-        if (!userFound) {
-          alert(`User ${username} does not exist.`);
+          // Send an invitation message
+          const messageID = uuidv4();
+          const messageRef = ref(db, `users/${userID}/messages/${messageID}`);
+          set(messageRef, {
+            fromUser: auth.currentUser.uid,
+            repositoryID: uuidv4(),
+            repositoryName: repoName,
+            status: 'pending',
+            message: `You have been invited to the repository ${repoName} as a cooperator. Please accept the invitation to gain access.`,
+            timestamp: new Date().toISOString(),
+          });
+          userFound = true;
         }
       });
+
+      if (!userFound) {
+        alert(`User ${username} does not exist.`);
+      }
     }
 
-    // Save the repository with valid cooperators in the database
-    onSave({
+    // Create a new repository in the database
+    const repositoryID = uuidv4(); // Generate a new ID for the repository
+    const newRepositoryData = {
       repositoryName: repoName,
       isPublic: isPublic,
       cooperators: validCooperators,
-    });
+      owner: auth.currentUser.uid, // Set the current user as the owner
+      createdAt: new Date().toISOString(),
+    };
+
+    const repoRef = ref(db, `repositories/${repositoryID}`);
+    await set(repoRef, newRepositoryData); // Use set to create the repository
+
+    // Close the popup
+    onClose();
+  };
+
+  // Function to update an existing repository
+  const handleUpdateRepository = async () => {
+    // eslint-disable-next-line react/prop-types
+    if (!repositoryData || !repositoryData.id) {
+      console.error("No repository data provided for update.");
+      return;
+    }
+
+    // Prepare the data to be updated
+    const updates = {
+      repositoryName: repoName,
+      isPublic: isPublic,
+    };
+
+    // eslint-disable-next-line react/prop-types
+    const repoRef = ref(db, `repositories/${repositoryData.id}`);
+    await update(repoRef, updates); // Use update to modify specific fields
+
+    // Close the popup
     onClose();
   };
 
@@ -89,10 +130,12 @@ function Popup({ onClose, onSave, repositoryData, owner }) {
         value={cooperators}
         onChange={(e) => setCooperators(e.target.value)}
       />
-      <button onClick={handleSave}>{repositoryData ? 'Update Repository' : 'Create Repository'}</button>
+      <button onClick={repositoryData ? handleUpdateRepository : handleCreateRepository}>
+        {repositoryData ? 'Update Repository' : 'Create Repository'}
+      </button>
       <button onClick={onClose}>Close</button>
     </div>
   );
 }
 
-export default Popup;
+export default NewRepositoryPopup;
