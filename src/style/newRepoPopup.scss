@@ -1,0 +1,102 @@
+/* newRepoPopup.scss */
+
+.newRepoPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #333333; /* Gray background */
+    padding: 1.5rem;
+    border: 2px solid #7e7f8d; /* White border */
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.5); /* White box shadow */
+    z-index: 1000; /* Ensure popup is above other elements */
+    border-radius: 8px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    color: #ffffff; /* White text */
+}
+
+.newRepoPopup_header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.newRepoPopup_inputText {
+    width: 90%;
+    padding: 0.4rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.newRepoPopup_inputText:focus {
+    outline: none;
+    border-color: #ffffff;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.newRepoPopup_inputRadio {
+    margin-right: 0.3rem;
+    padding: 0.6rem;
+    cursor: pointer;
+    accent-color:  #28a745; /* Modern browsers will use this for radio button styling */
+    transform: scale(2.0); /* Increase size of radio button */
+    position: relative;
+    left: -10%; /* Move to the left */
+}
+
+.newRepoPopup_inputRadio + label {
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+    left: -5%; /* Align text closer to the radio button */
+}
+
+.newRepoPopup_create {
+    background-color: #28a745;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.newRepoPopup_create:hover {
+    background-color: #218838;
+}
+
+.newRepoPopup_close {
+    background-color: #dc3545;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.newRepoPopup_close:hover {
+    background-color: #c82333;
+}
+
+.newRepoPopup_div{
+display: flex;
+flex-direction: row;
+margin-left: 2rem;
+}
+
+.newRepoPopup_label{
+display: flex;
+padding: 1.3rem;
+font-size: 1.2rem;
+font-weight: bold;
+cursor: pointer;
+}

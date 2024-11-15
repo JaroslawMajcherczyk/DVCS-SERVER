@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { ref, update, set, get, getDatabase } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
+import '../style/newRepoPopup.scss';
 
 // eslint-disable-next-line react/prop-types
 function NewRepositoryPopup({ onClose, repositoryData }) {
@@ -102,8 +103,8 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
         value={repoName}
         onChange={(e) => setRepoName(e.target.value)}
       />
-      <div>
-        <label>
+      <div className='newRepoPopup_div'>
+        <label className='newRepoPopup_label'>
           <input className='newRepoPopup_inputRadio'
             type="radio"
             name="visibility"
@@ -113,7 +114,7 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
           />
           Public
         </label>
-        <label>
+        <label className='newRepoPopup_label'>
           <input className='newRepoPopup_inputRadio'
             type="radio"
             name="visibility"
