@@ -1,0 +1,113 @@
+/* dashboard.scss */
+
+.header {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #333333; /* Dark gray background */
+  font-family: Arial, sans-serif;
+  color: #ffffff; /* White text */
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #333333;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.header_h3 {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: normal;
+  align-self: flex-start;
+}
+
+.user {
+  margin: 0;
+  font-size: 2.0rem;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 0.2rem;
+}
+
+.ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 1.5rem;
+}
+
+.li {
+  padding: 0.5rem 1rem;
+}
+
+.link {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 1.5rem; /* h2 size */
+  font-weight: bold;
+  transition: color 0.3s ease, border-bottom 0.3s ease;
+}
+
+.link:hover {
+  color: #cccccc;
+}
+
+.link:active, .link.selected {
+  border-bottom: 4px solid #075107; /* Green underline */
+}
+
+.link:focus {
+  outline: none;
+  border-bottom: 4px solid #075107; /* Ensure border persists */
+}
+
+.buton_logout {
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  background: none;
+  border: 1px solid #555555;
+  padding: 4.2px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.buton_logout:hover {
+  background-color: #555555;
+}
+
+.buton_logout:active {
+  font-weight: bold;
+  border-bottom: 2px solid #cccccc;
+}
+
+.content {
+  margin: 0; /* Adjust height based on .navbar padding */
+  padding: 0;
+  display: flex;
+  width: 100%;
+ 
+  
+}

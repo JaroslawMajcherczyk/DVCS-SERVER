@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from "firebase/database";
 import { auth, db } from "./firebase";
+import './style/registrationPage.scss';
 
 function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -39,36 +40,42 @@ function RegisterPage() {
   };
 
   return (
+    <div className="registration-container">
     <div>
-      <div>
-        <h1>Registration</h1>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit">Register</button>
-        </form>
-      </div>
-      <div>
-        <button onClick={handleLogout}>Return to Login</button>
-      </div>
+      <h1 className="registration-header">DVCS SERVER</h1>
+      <h2 className="registration-subheader">Registration</h2>
+      <form className="registration-form" onSubmit={handleSubmit}>
+        <input
+          className="registration-input"
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          className="registration-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          className="registration-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error && <p className="error-message">{error}</p>}
+        <button className="registration-button" type="submit">Register</button>
+      </form>
     </div>
+    <div>
+      <button className="return-button" onClick={handleLogout}>
+        Return to Login
+      </button>
+    </div>
+  </div>  
   );
 }
 

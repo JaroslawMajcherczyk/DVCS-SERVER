@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase"; // Import Firebase authentication
+import './style/loginPage.scss';
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -40,33 +41,39 @@ function LoginPage({ onLogin }) {
       localStorage.setItem("password", password);
 
       onLogin(userCredential.user.email); // Pass email to parent component
-      navigate("/dashboard");
+      navigate("/dashboard/profile");
     } catch (error) {
       setError("Login failed: " + error.message);
     }
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Login</button>
-      </form>
-      <button onClick={() => navigate("/register")}>Register</button>
-    </div>
+<div>
+<h1 className="login_header">DVCS SERVER</h1>
+  <h2 className="login_subheader">Login</h2>
+  <form onSubmit={handleSubmit}>
+    <input
+      className="login-input"
+      type="email"
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+    <input
+      className="login-input"
+      type="password"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+    {error && <p className="error-message">{error}</p>}
+    <button className="login-button" type="submit">Login</button>
+  </form>
+  <button className="register-button" onClick={() => navigate("/register")}>
+    Register
+  </button>
+</div>
+
   );
 }
 

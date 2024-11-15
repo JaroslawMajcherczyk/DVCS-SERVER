@@ -94,9 +94,9 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
   };
 
   return (
-    <div className="popup">
-      <h3>{repositoryData ? 'Edit Repository' : 'New Repository'}</h3>
-      <input
+    <div className="newRepoPopup">
+      <h3 className='newRepoPopup_header'>{repositoryData ? 'Edit Repository' : 'New Repository'}</h3>
+      <input className='newRepoPopup_inputText'
         type="text"
         placeholder="Repository Name"
         value={repoName}
@@ -104,7 +104,7 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
       />
       <div>
         <label>
-          <input
+          <input className='newRepoPopup_inputRadio'
             type="radio"
             name="visibility"
             value="public"
@@ -114,7 +114,7 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
           Public
         </label>
         <label>
-          <input
+          <input className='newRepoPopup_inputRadio'
             type="radio"
             name="visibility"
             value="private"
@@ -124,16 +124,16 @@ function NewRepositoryPopup({ onClose, repositoryData }) {
           Private
         </label>
       </div>
-      <input
+      <input className='newRepoPopup_inputText'
         type="text"
         placeholder="Cooperators (comma-separated)"
         value={cooperators}
         onChange={(e) => setCooperators(e.target.value)}
       />
-      <button onClick={repositoryData ? handleUpdateRepository : handleCreateRepository}>
+      <button className='newRepoPopup_create' onClick={repositoryData ? handleUpdateRepository : handleCreateRepository}>
         {repositoryData ? 'Update Repository' : 'Create Repository'}
       </button>
-      <button onClick={onClose}>Close</button>
+      <button className='newRepoPopup_close' onClick={onClose}>Close</button>
     </div>
   );
 }

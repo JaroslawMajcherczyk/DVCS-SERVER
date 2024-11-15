@@ -8,6 +8,7 @@ import RepoDeletePopup from './RepoDeletePopup';
 import NewCommitPopup from './NewCommitPopup'; // Import the NewCommitPopup component
 import MessagePopup from './MessagePopup'; 
 import { useOutletContext } from 'react-router-dom';
+import '../style/profile.scss';
 
 function Profile() {
   const [showPopup, setShowPopup] = useState(false);
@@ -213,34 +214,34 @@ function Profile() {
 
 
   return (
-    <div>
-      <h2>Repositories</h2>
-      <button onClick={() => { setShowPopup(true); setSelectedRepo(null); }}>New Repository</button>
+    <div className='profile'>
+      <button className='addRepo_button' onClick={() => { setShowPopup(true); setSelectedRepo(null); }}>New Repository</button>
+      <h1 className='profile_header'>Repositories</h1>
       
       {repositories.length > 0 ? (
         <ul>
           {repositories.map((repo) => (
-            <li key={repo.id}>
-              <button onClick={() => onSelectRepository(repo.id)}>{repo.repositoryName}</button>
+            <li className='li_horizontal' key={repo.id}>
+              <button className='repoName_button' onClick={() => onSelectRepository(repo.id)}>{repo.repositoryName}</button>
 
               {/* Conditional Rendering based on User Role */}
               {auth.currentUser.uid === repo.owner ? (
                 <>
-                  <button onClick={() => handleEditRepository(repo)}>Edit</button>
-                  <button onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
-                  <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
-                  <button onClick={() => handleOpenMessagePopup(repo)}>Add User To Repo</button>
+                  <button className='usage_button' onClick={() => handleEditRepository(repo)}>Edit</button>
+                  <button className='usage_button' onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
+                  <button className='usage_button' onClick={() => handleOpenNewCommitPopup(repo)}>NewCommit</button>
+                  <button className='usage_button' onClick={() => handleOpenMessagePopup(repo)}>AddUserToRepo</button>
                 </>
               ) : (
                 repo.cooperators && repo.cooperators[auth.currentUser.uid] ? (
-                  <button onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
+                  <button className='usage_button' onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
                 ) : null
               )}
               
-              <ul>
+              <ul className='commit_direction'>
                 {repo.commits && Object.entries(repo.commits).map(([commitID, commit]) => (
-                  <li key={commitID}>
-                    <span>{commit.message} - {new Date(commit.timestamp).toLocaleString()}</span>
+                  <li className='li_nodecoration' key={commitID}>
+                    <span className='commit'>{commit.message} - {new Date(commit.timestamp).toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
@@ -248,7 +249,7 @@ function Profile() {
           ))}
         </ul>
       ) : (
-        <p>No repositories created yet.</p>
+        <p className='error'>No repositories created yet.</p>
       )}
 
       {showPopup && (

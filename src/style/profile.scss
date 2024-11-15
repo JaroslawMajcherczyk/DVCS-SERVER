@@ -1,0 +1,101 @@
+/* profile.scss */
+
+.profile {
+   margin:0;
+  }
+  
+  .addRepo_button {
+    align-self: flex-start;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555555;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .addRepo_button:hover {
+    background-color: #444444;
+  }
+  
+  .profile_header {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .li_horizontal {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .repoName_button {
+    padding: 0.3rem 0.6rem;
+    font-size: 1.0rem;
+    font-weight: bold;
+    background-color: #333333;
+    color: #e1e1e9;
+    border: 1px solid #555555;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .repoName_button:hover {
+    background-color: #444444;
+  }
+  
+  .usage_button {
+    padding:0.2rem;
+    font-size: 0.9rem;
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555555;
+    justify-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .usage_button:hover {
+    background-color: #444444;
+  }
+  
+  .li_nodecoration {
+    list-style: none;
+    margin-top: 0.5rem;
+    padding-left: 0;
+  }
+  
+  .li_nodecoration li {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+  }
+  
+  .commit {
+    font-size: 0.8rem;
+    color: #888888;
+  }
+  
+  .error {
+    font-size: 1.5rem;
+    color: #ff0000;
+    font-weight: bold;
+    margin-top: 1rem;
+  }
+  .commit_direction {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
