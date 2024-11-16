@@ -43,26 +43,26 @@ function Search() {
   };
 
   return (
-    <div>
-      <h2>Search Public Repositories</h2>
-      <input
+    <div className='search_wrapper'>
+      <h2 className='search_header'>Search Public Repositories</h2>
+      <input className='search_input'
         type="text"
         placeholder="Search for a repository..."
         value={searchQuery}
         onChange={handleSearchChange}
       />
 
-      <ul>
+      <ul className='search_container'>
         {filteredRepositories.length > 0 ? (
           filteredRepositories.map((repo) => (
-            <li key={repo.id}>
-              <button onClick={() => handleRepositoryClick(repo.id)}>
+            <li className='search_repoKey' key={repo.id}>
+              <button className='search_buttonRepoKey' onClick={() => handleRepositoryClick(repo.id)}>
                 {repo.repositoryName}
               </button>
             </li>
           ))
         ) : (
-          <p>No repositories found.</p>
+          <p className='search_error'>No repositories found.</p>
         )}
       </ul>
 

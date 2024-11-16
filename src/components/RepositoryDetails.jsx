@@ -86,40 +86,40 @@ function RepositoryDetails({ repoId }) {
   };
 
   return (
-    <div>
-      <h2>Repository: {repoName}</h2> {/* Display repository name */}
+    <div className='repoDetails_wrapper'>
+      <h2 className='repoDetails_subheader'>Repository: {repoName}</h2> {/* Display repository name */}
 
-      <h3>Path Navigation</h3>
-      <div>
+      <h3 className='repoDetails_header'>Path Navigation</h3>
+      <div className='repoDetails_container'>
         {[latestCommitName, ...currentPath.replace(baseCommitPath, "").split('/').slice(1)]
           .map((part, index) => (
-            <span key={index}>
-              <button onClick={() => handleBreadcrumbClick(index)}>{part}</button>
+            <span className='repoDetails_index' key={index}>
+              <button className='repoDetails_buttonIndex' onClick={() => handleBreadcrumbClick(index)}>{part}</button>
               {index < currentPath.split('/').length - 1 && ' / '}
             </span>
         ))}
       </div>
 
-      <h3>Folders</h3>
-      <ul>
+      <h3 className='repoDetails_subheader'>Folders</h3>
+      <ul className='repoDetails_mapContainer'>
         {folders.map((folder) => (
-          <li key={folder}>
-            <button onClick={() => enterFolder(folder)}>{folder}</button>
+          <li className='repoDetails_keyContainer' key={folder}>
+            <button className='repoDetails_buttonOpenFolder' onClick={() => enterFolder(folder)}>{folder}</button>
           </li>
         ))}
       </ul>
 
-      <h3>Files</h3>
-      <ul>
+      <h3 className='repoDetails_subheader'>Files</h3>
+      <ul className='repoDetails_mapContainer'>
         {files.map((file) => (
-          <li key={file}>
-            <button onClick={() => fetchFileContent(file)}>{file}</button>
+          <li className='repoDetails_keyContainer' key={file}>
+            <button className='repoDetails_buttonOpenFolder' onClick={() => fetchFileContent(file)}>{file}</button>
           </li>
         ))}
       </ul>
 
-      <h3>File Content</h3>
-      <pre>{fileContent}</pre>
+      <h3 className='repoDetails_subheader'>File Content</h3>
+      <pre className='repoDetails_fileContent'>{fileContent}</pre>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+// eslint-disable-next-line react/prop-types
 function MessagePopup({ onClose, onSendMessage, repositoryID, repositoryName }) {
   const [recipientUsername, setRecipientUsername] = useState('');
 
@@ -9,16 +10,16 @@ function MessagePopup({ onClose, onSendMessage, repositoryID, repositoryName }) 
   };
 
   return (
-    <div className="popup">
-      <h3>Send Repository Access Invitation</h3>
-      <input
+    <div className="messagePopup_wrapper">
+      <h3 className='messagePopup_header'>Send Repository Access Invitation</h3>
+      <input className='messagePopup_input'
         type="text"
         placeholder="Enter recipient username"
         value={recipientUsername}
         onChange={(e) => setRecipientUsername(e.target.value)}
       />
-      <button onClick={handleSend}>Send Message</button>
-      <button onClick={onClose}>Close</button>
+      <button className='messagePopup_buttonSend' onClick={handleSend}>Send Message</button>
+      <button className='messagePopup_buttonClose' onClick={onClose}>Close</button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+// eslint-disable-next-line react/prop-types
 function NewCommitPopup({ onClose, onSave }) {
   const [commitMessage, setCommitMessage] = useState("");
 
@@ -13,18 +14,18 @@ function NewCommitPopup({ onClose, onSave }) {
   };
 
   return (
-    <div className="popup-overlay">
-      <div className="popup-content">
-        <h3>Create a New Commit</h3>
-        <input
+    <div className="newCommitPopup_wrapper">
+      <div className="newCommitPopup_container">
+        <h3 className='newCommitPopup_header' >Create a New Commit</h3>
+        <input className='newCommitPopup_input'
           type="text"
           placeholder="Enter commit message"
           value={commitMessage}
           onChange={(e) => setCommitMessage(e.target.value)}
         />
-        <div className="popup-buttons">
-          <button onClick={handleSave}>Save Commit</button>
-          <button onClick={onClose}>Cancel</button>
+        <div className="newCommitPopup_bottonsContainer">
+          <button className='newCommitPopup_buttonSave' onClick={handleSave}>Save Commit</button>
+          <button className='newCommitPopup_buttonCancel' onClick={onClose}>Cancel</button>
         </div>
       </div>
     </div>

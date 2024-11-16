@@ -54,25 +54,25 @@ function Messages() {
   };
 
   return (
-    <div>
-      <h2>Messages</h2>
+    <div className='message_wrapper'>
+      <h2 className='message_header'>Messages</h2>
       {messages.length > 0 ? (
-        <ul>
+        <ul className='message_container'>
           {messages.map((message) => (
-            <li key={message.id}>
-              <p>{message.message}</p>
-              <p>Status: {message.status === 0 ? "Not Read" : message.status === 1 ? "Accepted" : "Rejected"}</p>
+            <li className='message_messageWrapper' key={message.id}>
+              <p className='message_userMessage'>{message.message}</p>
+              <p className='message_Status'>Status: {message.status === 0 ? "Not Read" : message.status === 1 ? "Accepted" : "Rejected"}</p>
               {message.status === 0 && (
-                <div>
-                  <button onClick={() => handleAcceptMessage(message)}>Accept</button>
-                  <button onClick={() => handleRejectMessage(message)}>Reject</button>
+                <div className='message_buttonsContainer'>
+                  <button className='message_buttonAccept' onClick={() => handleAcceptMessage(message)}>Accept</button>
+                  <button className='message_buttonReject' onClick={() => handleRejectMessage(message)}>Reject</button>
                 </div>
               )}
             </li>
           ))}
         </ul>
       ) : (
-        <p>No messages.</p>
+        <p className='message_error'>No messages.</p>
       )}
     </div>
   );
