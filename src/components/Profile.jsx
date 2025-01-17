@@ -46,54 +46,124 @@ function Profile() {
     }
   }, [auth.currentUser, db]);
 
+
+  const testUploadBlob = async (blob, path) => {
+    try {
+      console.log("Blob created:", blob);
+  
+      // Firebase Storage
+      const storage = getStorage();
+      const testStorageRef = storageRef(storage, path);
+  
+      // Przesyłanie Blob do Firebase Storage
+      console.log("Uploading Blob to Firebase Storage at path:", path);
+      await uploadBytes(testStorageRef, blob);
+  
+      console.log("Blob uploaded successfully to Firebase Storage at path:", path);
+    } catch (error) {
+      console.error("Error uploading Blob to Firebase Storage:", error);
+    }
+  };
+  
+  
+  // Wywołanie funkcji testowej
+
+  
+
+
+
   const handleCreateRepository = async (repositoryData) => {
     const user = auth.currentUser;
-    if (!user) return;
-
-    const repositoryID = selectedRepo ? selectedRepo.id : uuidv4();
+    if (!user) {
+      console.error("User not authenticated.");
+      return;
+    }
+  
+    const repositoryID = uuidv4();
     const repositoryDataWithOwner = {
       ...repositoryData,
       owner: user.uid,
       createdAt: new Date().toISOString(),
+      isPublic: true,
     };
-
-    // Add repository data to the Realtime Database
-    const repoRef = ref(db, `repositories/${repositoryID}`);
-    await set(repoRef, repositoryDataWithOwner);
-
-
-    await handleCreateCommit(repositoryID, "First Commit", [
-      new Blob(["This is the initial commit for the repository."], { type: "text/plain" })
-    ]);
+  
+    try {
+      console.log("Attempting to create repository...");
+  
+      // Dodanie danych repozytorium do Firebase Realtime Database
+      const repoRef = ref(db, `repositories/${repositoryID}`);
+      await set(repoRef, repositoryDataWithOwner);
+      console.log(`Repository created with ID: ${repositoryID}`);
+  
+      // Tworzenie pierwszego commitu
+      console.log("Attempting to create first commit...");
+      const firstCommitID = uuidv4();
+      const firstCommitData = {
+        files: {
+          0: "ReadMe.txt",
+        },
+        message: "first commit",
+        timestamp: new Date().toISOString(),
+        userID: user.uid,
+      };
+  
+      const commitRef = ref(db, `repositories/${repositoryID}/commits/${firstCommitID}`);
+      await set(commitRef, firstCommitData);
+      console.log(`First commit added to repository: ${repositoryID}`);
+  
+      // Przesyłanie pliku ReadMe.txt do Firebase Storage
+      console.log("Uploading ReadMe.txt to Firebase Storage...");
+      const fileBlob = new Blob(
+        ["This is the initial commit for the repository."],
+        { type: "text/plain" }
+      );
+  
+      await testUploadBlob(fileBlob, `repositories/${repositoryID}/commits/${firstCommitID}/ReadMe.txt`);
+      console.log("ReadMe.txt uploaded successfully.");
+    } catch (error) {
+      console.error("Error creating repository or first commit:", error);
+    }
   };
 
+  
+  
+  
   const handleCreateCommit = async (repositoryID, commitMessage, commitFiles) => {
     const user = auth.currentUser;
-    if (!user) return;
-
+    if (!user) {
+      console.error("User not authenticated.");
+      return;
+    }
+  
     const commitID = uuidv4();
     const commitData = {
       message: commitMessage,
       timestamp: new Date().toISOString(),
       userID: user.uid,
-      files: commitFiles.map(file => file.name || "ReadMe.txt"),
+      files: commitFiles.map((file) => file.name || "ReadMe.txt"),
     };
-
-    const commitRef = ref(db, `repositories/${repositoryID}/commits/${commitID}`);
-    await set(commitRef, commitData);
-
-    const storage = getStorage();
-    const commitStorageRef = storageRef(storage, `databases/${repositoryID}/commits/${commitID}`);
-
+  
     try {
+      // Add commit data to Realtime Database
+      const commitRef = ref(db, `repositories/${repositoryID}/commits/${commitID}`);
+      await set(commitRef, commitData);
+      console.log(`Commit added to database with ID: ${commitID}`);
+  
+      // Upload files to Firebase Storage
+      const storage = getStorage();
+      const commitStorageRef = storageRef(storage, `databases/${repositoryID}/commits/${commitID}`);
+  
       for (const file of commitFiles) {
-        await uploadBytes(storageRef(commitStorageRef, file.name || "ReadMe.txt"), file);
+        const fileRef = storageRef(commitStorageRef, file.name || "ReadMe.txt");
+        await uploadBytes(fileRef, file);
+        console.log(`Uploaded file to Storage: ${file.name || "ReadMe.txt"}`);
       }
-      console.log("Commit files uploaded to Firebase Storage");
     } catch (error) {
-      console.error("Error uploading commit files:", error);
+      console.error("Error creating commit:", error);
     }
   };
+  
+  
 
   const handleOpenNewCommitPopup = (repo) => {
     setSelectedRepo(repo);
@@ -213,44 +283,48 @@ function Profile() {
   };
 
 
-  return (
-    <div className='profile'>
-      <button className='addRepo_button' onClick={() => { setShowPopup(true); setSelectedRepo(null); }}>New Repository</button>
-      <h1 className='profile_header'>Repositories</h1>
-      
-      {repositories.length > 0 ? (
-        <ul>
-          {repositories.map((repo) => (
-            <li className='li_horizontal' key={repo.id}>
-              <button className='repoName_button' onClick={() => onSelectRepository(repo.id)}>{repo.repositoryName}</button>
-
-              {/* Conditional Rendering based on User Role */}
-              {auth.currentUser.uid === repo.owner ? (
-                <>
-                  <button className='usage_button' onClick={() => handleEditRepository(repo)}>Edit</button>
-                  <button className='usage_button' onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
-                  <button className='usage_button' onClick={() => handleOpenNewCommitPopup(repo)}>NewCommit</button>
-                  <button className='usage_button' onClick={() => handleOpenMessagePopup(repo)}>AddUserToRepo</button>
-                </>
-              ) : (
-                repo.cooperators && repo.cooperators[auth.currentUser.uid] ? (
-                  <button className='usage_button' onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
-                ) : null
-              )}
-              
-              <ul className='commit_direction'>
-                {repo.commits && Object.entries(repo.commits).map(([commitID, commit]) => (
-                  <li className='li_nodecoration' key={commitID}>
-                    <span className='commit'>{commit.message} - {new Date(commit.timestamp).toLocaleString()}</span>
+    return (
+      <div className="profile_container">
+        <button className="addRepo_button" onClick={() => { setShowPopup(true); setSelectedRepo(null); }}>New Repository</button>
+  
+        <div className="profile">
+          <h1 className="profile_header">Repositories</h1>
+  
+          <div className="repositories_list">
+            {repositories.length > 0 ? (
+              <ul>
+                {repositories.map((repo) => (
+                  <li className="li_horizontal" key={repo.id}>
+                    <button className="repoName_button" onClick={() => onSelectRepository(repo.id)}>{repo.repositoryName}</button>
+  
+                    {auth.currentUser.uid === repo.owner ? (
+                      <>
+                        <button className="usage_button" onClick={() => handleEditRepository(repo)}>Edit</button>
+                        <button className="usage_button" onClick={() => handleOpenDeletePopup(repo)}>Delete</button>
+                        <button className="usage_button" onClick={() => handleOpenNewCommitPopup(repo)}>NewCommit</button> 
+                        <button className="usage_button" onClick={() => handleOpenMessagePopup(repo)}>AddUserToRepo</button>
+                      </>
+                    ) : (
+                      repo.cooperators && repo.cooperators[auth.currentUser.uid] ? (
+                        <button className="usage_button" onClick={() => handleOpenNewCommitPopup(repo)}>New Commit</button>
+                      ) : null
+                    )}
+  
+                    <ul className="commit_direction">
+                      {repo.commits && Object.entries(repo.commits).map(([commitID, commit]) => (
+                        <li className="li_nodecoration" key={commitID}>
+                          <span className="commit">{commit.message} - {new Date(commit.timestamp).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ul>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className='error'>No repositories created yet.</p>
-      )}
+            ) : (
+              <p className="error">No repositories created yet.</p>
+            )}
+          </div>
+        </div>
 
       {showPopup && (
         <Popup
